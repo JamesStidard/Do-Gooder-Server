@@ -1,0 +1,8 @@
+flake8
+flake8-docstrings
+pytest
+python-dotenv
+tornado
+SQLAlchemy
+securestore
+git+git://github.com/blueshed/blueshed-py.git#egg=blueshed
