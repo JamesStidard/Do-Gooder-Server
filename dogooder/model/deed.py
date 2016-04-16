@@ -14,3 +14,9 @@ class Deed(Base):
                                    remote_side='Accomplishment.deed_id',
                                    back_populates='deed',
                                    cascade='all, delete-orphan')
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'description': self.description,
+        }

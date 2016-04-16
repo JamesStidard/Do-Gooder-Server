@@ -15,9 +15,9 @@ ROUTES = [
 
 def main():
     # Construct the Control which will handle all actions performed by clients
-    control = None  # Control(CONFIG.DB_URL, pool_recycle=60)
+    control = Control(CONFIG.DB_URL, pool_recycle=60)
 
-    # Create the web server application with eviroment settings
+    # Create the web server application with environment settings
     app = Application(
         ROUTES,
         control=control,
@@ -28,8 +28,6 @@ def main():
     app.listen(CONFIG.PORT)
     logging.info('Listening on port {}'.format(CONFIG.PORT))
 
-    # Keep any client websockets open by pinging them every now and then
-    # ioloop.PeriodicCallback(WebSocketHandler.keep_alive, 30000).start()
     # Start the server - execution blocks here while server runs
     ioloop.IOLoop.current().start()
 

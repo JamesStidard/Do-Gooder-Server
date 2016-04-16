@@ -1,6 +1,9 @@
+.idea
 .env
 venv
 
 *.egg-info
 *.pyc
 __pycache__
+
+.idea/Do-Gooder-Server.iml

@@ -36,6 +36,7 @@ def get_cookie_secret_env(default="don't-you-dare-tell-anyone"):
     secret = os.getenv('COOKIE_SECRET', default)
     if not debug and secret == default:
         raise ValueError('Default cookie secret used on production. Please set COOKIE_SECRET environment variable')  # noqa
+    return secret
 
 
 def get_port_env():

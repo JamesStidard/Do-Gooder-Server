@@ -4,5 +4,5 @@ pytest
 python-dotenv
 tornado
 SQLAlchemy
-securestore
 git+git://github.com/blueshed/blueshed-py.git#egg=blueshed
+git+git://github.com/OliverDashiell/utilise-py.git#egg=utilise

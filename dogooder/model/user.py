@@ -42,7 +42,7 @@ class User(Base):
     def password(self, password):
         self._password = PWH.create_password(password)
 
-    def client_format(self):
+    def to_json(self):
         return {
             'id': self.id,
             'username': self.username,
