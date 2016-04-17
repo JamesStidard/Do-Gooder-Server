@@ -46,6 +46,7 @@ class User(Base):
         return {
             'id': str(self.id),
             'username': self.username,
+            'accomplishments': [a.to_json for a in self.accomplishments]
         }
 
     def authenticate(self, password: str=None):
