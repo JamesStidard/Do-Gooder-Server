@@ -34,7 +34,7 @@ class WebSocketHandler(BaseHandler):
         if not hasattr(self, "_current_user"):
             self._current_user = self.get_current_user()
         if self._current_user:
-            return int(self._current_user)
+            return self._current_user
 
     def gen_login_cookie(self, value):
         return create_signed_value(self.application.settings["cookie_secret"],
@@ -89,7 +89,7 @@ class WebSocketHandler(BaseHandler):
                     value = self.get_secure_cookie(self.cookie_name,
                                                    args.get('value'))
                     if value:
-                        self._current_user = int(value)
+                        self._current_user = value.decode('utf-8')
                         self.control._set_user(self, self.current_user)
                         self.write_message(json_encode({
                             "signal": "user",

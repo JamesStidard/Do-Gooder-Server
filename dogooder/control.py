@@ -66,17 +66,17 @@ class Control(BaseControl):
                 self._broadcast(*args)
         self._pending = []
 
-    def _set_user(self, client, person_id):
+    def _set_user(self, client, user_id):
         """Called by client on authenticating."""
         with self.session as session:
-            user = session.query(User).get(person_id)
+            user = session.query(User).get(user_id)
             client.user = user.to_json()
 
     def ping(self, client):
         """Keep-alive Endpoint."""
         return "pong"
 
-    def login(self, client, email, password):
+    def sign_in(self, client, email, password):
         """Called by client to authenticate."""
         with self.session as session:
             try:
@@ -86,6 +86,9 @@ class Control(BaseControl):
                 raise Exception("Email or password incorrect")
             else:
                 client.user = user.to_json()
+
+    def sign_out(self, client):
+        client.user = None
 
     def get_deeds(self, client, limit=None, timezone=None):
         with self.session as session:
@@ -99,7 +102,8 @@ class Control(BaseControl):
                            .all()
             return [deed.to_json() for deed in deeds]
 
-    def insert_deed(self, client, description):
+    @user_session
+    def insert_deed(self, user, session, description):
         with self.session as session:
             deed = Deed(description=description)
             session.add(deed)
