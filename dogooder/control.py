@@ -86,3 +86,11 @@ class Control(BaseControl):
         with self.session as session:
             deeds = session.query(Deed).all()
             return [deed.to_json() for deed in deeds]
+
+    def insert_deed(self, client, description):
+        with self.session as session:
+            deed = Deed(description=description)
+            session.add(deed)
+            session.flush()
+            self._broadcast_on_success('insert_deed', deed.to_json())
+        
