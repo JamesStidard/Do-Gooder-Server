@@ -5,6 +5,7 @@ from sqlalchemy import func
 
 from dogooder.model.base import Base
 from dogooder.model.custom_types.uuid import UUID
+from dogooder.utils.date_helpers import to_unix_time
 
 
 class Accomplishment(Base):
@@ -24,6 +25,9 @@ class Accomplishment(Base):
                              back_populates='accomplishments')
 
     def to_json(self):
+        completed = to_unix_time(self.completed) if self.completed else None
+
         return {
             'id': self.id,
+            'completed': completed,
         }

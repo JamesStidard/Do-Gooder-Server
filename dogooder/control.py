@@ -104,14 +104,26 @@ class Control(BaseControl):
 
     @user_session
     def insert_deed(self, user, session, description):
-        with self.session as session:
-            deed = Deed(description=description)
-            session.add(deed)
-            session.flush()
-            self._broadcast_on_success('insert_deed', deed.to_json())
+        deed = Deed(description=description)
+        session.add(deed)
+        session.flush()
+        self._broadcast_on_success('insert_deed', deed.to_json())
 
     @user_session
     def accomplish_deed(self, user, session, id):
+        now      = datetime.datetime.utcnow()
+        today    = datetime.datetime(now.year, now.month, now.day)
+        tomorrow = datetime.datetime(now.year, now.month, now.day + 1)
+
+        todays_deeds = session.query(Accomplishment)\
+                              .filter(Accomplishment.user_id == user.id,
+                                      Accomplishment.completed >= today,
+                                      Accomplishment.completed < tomorrow)\
+                              .all()
+
+        if len(todays_deeds) >= 1:
+            raise Exception('Deed already accomplished today')
+
         deed           = session.query(Deed).filter(Deed.id == id).one()
         accomplishment = Accomplishment(deed=deed, user=user)
 
