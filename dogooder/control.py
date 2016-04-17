@@ -1,8 +1,10 @@
+import datetime
 from contextlib import contextmanager
 
 from sqlalchemy import func
 from sqlalchemy.orm.exc import NoResultFound
 from blueshed.model_helpers.base_control import BaseControl
+from dateutil import tz
 
 from dogooder.utils.orm_utils import connect
 from dogooder.model.user import User
@@ -83,10 +85,14 @@ class Control(BaseControl):
             else:
                 client.user = user.to_json()
 
-    def get_deeds(self, client, limit=None):
+    def get_deeds(self, client, limit=None, timezone=None):
         with self.session as session:
+            timezone = tz.gettz(timezone)
+            today    = datetime.datetime.now(tz=timezone)
+            seed     = int(today.strftime('%Y%m%d'))
+            # TODO: filter out deeds created after seed time (stop adding new deeds changing today's deeds)  # noqa
             deeds = session.query(Deed)\
-                           .order_by(func.rand())\
+                           .order_by(func.rand(seed))\
                            .limit(limit)\
                            .all()
             return [deed.to_json() for deed in deeds]

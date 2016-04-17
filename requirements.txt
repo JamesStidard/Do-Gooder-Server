@@ -4,5 +4,6 @@ pytest
 python-dotenv
 tornado
 SQLAlchemy
+python-dateutil
 git+git://github.com/blueshed/blueshed-py.git#egg=blueshed
 git+git://github.com/OliverDashiell/utilise-py.git#egg=utilise
