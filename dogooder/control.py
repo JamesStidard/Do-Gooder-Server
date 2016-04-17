@@ -9,6 +9,8 @@ from dateutil import tz
 from dogooder.utils.orm_utils import connect
 from dogooder.model.user import User
 from dogooder.model.deed import Deed
+from dogooder.model.accomplishment import Accomplishment
+from dogooder.utils.user_session import user_session
 
 
 class Control(BaseControl):
@@ -103,3 +105,13 @@ class Control(BaseControl):
             session.add(deed)
             session.flush()
             self._broadcast_on_success('insert_deed', deed.to_json())
+
+    @user_session
+    def accomplish_deed(self, user, session, id):
+        deed           = session.query(Deed).filter(Deed.id == id).one()
+        accomplishment = Accomplishment(deed=deed, user=user)
+
+        session.add(accomplishment)
+        session.flush()
+
+        self._broadcast_on_success('update_deed', deed.to_json())

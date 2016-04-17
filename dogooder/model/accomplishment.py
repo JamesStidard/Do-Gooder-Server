@@ -22,3 +22,8 @@ class Accomplishment(Base):
                              primaryjoin='Accomplishment.deed_id==Deed.id',
                              remote_side='Deed.id',
                              back_populates='accomplishments')
+
+    def to_json(self):
+        return {
+            'id': self.id,
+        }

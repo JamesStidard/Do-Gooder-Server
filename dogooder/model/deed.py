@@ -19,4 +19,5 @@ class Deed(Base):
         return {
             'id': self.id,
             'description': self.description,
+            'accomplishments': [a.to_json() for a in self.accomplishments]
         }
