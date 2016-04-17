@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 
+from sqlalchemy import func
 from sqlalchemy.orm.exc import NoResultFound
 from blueshed.model_helpers.base_control import BaseControl
 
@@ -82,9 +83,12 @@ class Control(BaseControl):
             else:
                 client.user = user.to_json()
 
-    def get_deeds(self, client):
+    def get_deeds(self, client, limit=None):
         with self.session as session:
-            deeds = session.query(Deed).all()
+            deeds = session.query(Deed)\
+                           .order_by(func.rand())\
+                           .limit(limit)\
+                           .all()
             return [deed.to_json() for deed in deeds]
 
     def insert_deed(self, client, description):
@@ -93,4 +97,3 @@ class Control(BaseControl):
             session.add(deed)
             session.flush()
             self._broadcast_on_success('insert_deed', deed.to_json())
-        
