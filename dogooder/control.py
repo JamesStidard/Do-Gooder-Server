@@ -3,7 +3,10 @@ from contextlib import contextmanager
 
 from sqlalchemy import func
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm import joinedload
+
 from blueshed.model_helpers.base_control import BaseControl
+
 from dateutil import tz
 
 from dogooder.utils.orm_utils import connect
@@ -90,16 +93,47 @@ class Control(BaseControl):
     def sign_out(self, client):
         client.user = None
 
-    def get_deeds(self, client, limit=None, timezone=None):
+    def get_todays_deeds(self, client, timezone=None):
         with self.session as session:
-            timezone = tz.gettz(timezone)
-            today    = datetime.datetime.now(tz=timezone)
-            seed     = int(today.strftime('%Y%m%d'))
-            # TODO: filter out deeds created after seed time (stop adding new deeds changing today's deeds)  # noqa
-            deeds = session.query(Deed)\
-                           .order_by(func.rand(seed))\
-                           .limit(limit)\
-                           .all()
+            timezone    = tz.gettz(timezone)
+            today       = datetime.datetime.now(tz=timezone)
+            today_start = datetime.datetime(today.year, today.month, today.day)
+            tomorrow    = datetime.datetime(today.year, today.month, today.day) + datetime.timedelta(days=1)
+            seed        = int(today.strftime('%Y%m%d'))
+            deeds       = session.query(Deed)\
+                                 .filter(Deed.created < today_start)\
+                                 .order_by(func.rand(seed))\
+                                 .limit(2)\
+                                 .all()
+
+            if client.current_user:
+                achieved = session.query(Accomplishment)\
+                                  .options(joinedload(Accomplishment.deed))\
+                                  .filter(Accomplishment.completed >= today_start,
+                                          Accomplishment.completed < tomorrow,
+                                          Accomplishment.user_id == client.current_user)\
+                                  .one_or_none()
+
+                if achieved:
+                    result = session.query(Accomplishment.deed_id, func.count(Accomplishment.deed_id))\
+                                    .filter(Accomplishment.completed >= today_start,
+                                            Accomplishment.completed < tomorrow)\
+                                    .group_by(Accomplishment.deed_id).all()
+
+                    total_votes = sum([count for (_, count) in result])
+
+                    for (deed_id, count) in result:
+                        if achieved.deed_id is deed_id:
+                            percent = 100 * float(count) / float(total_votes)
+                            result  = achieved.deed.to_json()
+                            result.update(percent_of_votes=percent)
+                            return [result]
+
+            return [deed.to_json() for deed in deeds]
+
+    def get_deeds(self, _, limit=None):
+        with self.session as session:
+            deeds = session.query(Deed).limit(limit).all()
             return [deed.to_json() for deed in deeds]
 
     @user_session

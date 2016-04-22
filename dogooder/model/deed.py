@@ -1,4 +1,6 @@
-from sqlalchemy.types import String, Integer
+import datetime
+
+from sqlalchemy.types import String, Integer, DateTime
 from sqlalchemy.schema import Column
 from sqlalchemy.orm import relationship
 
@@ -8,6 +10,7 @@ from dogooder.model.base import Base
 class Deed(Base):
     id              = Column(Integer, primary_key=True)
     description     = Column(String(255), nullable=False, unique=True)
+    created         = Column(DateTime, default=datetime.datetime.utcnow)
     accomplishments = relationship('Accomplishment',
                                    uselist=True,
                                    primaryjoin='Deed.id==Accomplishment.deed_id',  # noqa
