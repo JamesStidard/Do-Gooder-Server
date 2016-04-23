@@ -10,7 +10,7 @@ from dogooder.model.base import Base
 class Deed(Base):
     id              = Column(Integer, primary_key=True)
     description     = Column(String(255), nullable=False, unique=True)
-    created         = Column(DateTime, nullabel=False, default=datetime.datetime.utcnow)
+    created         = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
     accomplishments = relationship('Accomplishment',
                                    uselist=True,
                                    primaryjoin='Deed.id==Accomplishment.deed_id',  # noqa
