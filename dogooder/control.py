@@ -1,5 +1,6 @@
 import datetime
 from contextlib import contextmanager
+from itertools import chain
 
 from sqlalchemy import func
 from sqlalchemy.orm.exc import NoResultFound
@@ -93,43 +94,33 @@ class Control(BaseControl):
     def sign_out(self, client):
         client.user = None
 
+    def _get_todays_deeds(self, session, user_id, timezone=None):
+        timezone    = tz.gettz(timezone)
+        today       = datetime.datetime.now(tz=timezone)
+        today_start = datetime.datetime(today.year, today.month, today.day)
+        seed        = int(today.strftime('%Y%m%d'))
+
+        return session.query(Deed)\
+                      .options(joinedload(Deed.todays_accomplishments))\
+                      .filter(Deed.created < today_start)\
+                      .order_by(func.rand(seed))\
+                      .limit(2)\
+                      .all()
+
     def get_todays_deeds(self, client, timezone=None):
         with self.session as session:
-            timezone    = tz.gettz(timezone)
-            today       = datetime.datetime.now(tz=timezone)
-            today_start = datetime.datetime(today.year, today.month, today.day)
-            tomorrow    = datetime.datetime(today.year, today.month, today.day) + datetime.timedelta(days=1)
-            seed        = int(today.strftime('%Y%m%d'))
-            deeds       = session.query(Deed)\
-                                 .filter(Deed.created < today_start)\
-                                 .order_by(func.rand(seed))\
-                                 .limit(2)\
-                                 .all()
+            deeds = self._get_todays_deeds(session=session, user_id=client.current_user, timezone=timezone)
 
-            if client.current_user:
-                achieved = session.query(Accomplishment)\
-                                  .options(joinedload(Accomplishment.deed))\
-                                  .filter(Accomplishment.completed >= today_start,
-                                          Accomplishment.completed < tomorrow,
-                                          Accomplishment.user_id == client.current_user)\
-                                  .one_or_none()
+            all_accomplishments = chain.from_iterable(d.todays_accomplishments for d in deeds)
+            champians           = [str(a.user_id) for a in all_accomplishments]
+            completed_today     = client.current_user in champians
 
-                if achieved:
-                    result = session.query(Accomplishment.deed_id, func.count(Accomplishment.deed_id))\
-                                    .filter(Accomplishment.completed >= today_start,
-                                            Accomplishment.completed < tomorrow)\
-                                    .group_by(Accomplishment.deed_id).all()
-
-                    total_votes = sum([count for (_, count) in result])
-
-                    for (deed_id, count) in result:
-                        if achieved.deed_id is deed_id:
-                            percent = 100 * float(count) / float(total_votes)
-                            result  = achieved.deed.to_json()
-                            result.update(percent_of_votes=percent)
-                            return [result]
-
-            return [deed.to_json() for deed in deeds]
+            return [{
+                'id': deed.id,
+                'description': deed.description,
+                'accomplished': client.current_user in [str(a.user_id) for a in deed.todays_accomplishments],
+                'accomplished_count': len(deed.todays_accomplishments) if completed_today else None,
+            } for deed in deeds]
 
     def get_deeds(self, _, limit=None):
         with self.session as session:
@@ -144,24 +135,24 @@ class Control(BaseControl):
         self._broadcast_on_success('insert_deed', deed.to_json())
 
     @user_session
-    def accomplish_deed(self, user, session, id):
-        now      = datetime.datetime.utcnow()
-        today    = datetime.datetime(now.year, now.month, now.day)
-        tomorrow = datetime.datetime(now.year, now.month, now.day + 1)
+    def accomplish_deed(self, user, session, deed_id, timezone=None):
+        deeds = self._get_todays_deeds(session=session, user_id=str(user.id), timezone=timezone)
 
-        todays_deeds = session.query(Accomplishment)\
-                              .filter(Accomplishment.user_id == user.id,
-                                      Accomplishment.completed >= today,
-                                      Accomplishment.completed < tomorrow)\
-                              .all()
+        try:
+            deed = [d for d in deeds if d.id == deed_id][0]
+        except IndexError:
+            raise Exception('Deed not eligable for complition today.')
+        else:
+            if user.id in [a.user_id for a in deed.todays_accomplishments]:
+                raise Exception('Deed already accomplished today')
 
-        if len(todays_deeds) >= 1:
-            raise Exception('Deed already accomplished today')
+            accomplishment = Accomplishment(deed=deed, user=user)
+            session.add(accomplishment)
+            session.commit()
 
-        deed           = session.query(Deed).filter(Deed.id == id).one()
-        accomplishment = Accomplishment(deed=deed, user=user)
-
-        session.add(accomplishment)
-        session.flush()
-
-        self._broadcast_on_success('update_deed', deed.to_json())
+            return [{
+                'id': deed.id,
+                'description': deed.description,
+                'accomplished': user.id in [a.user_id for a in deed.todays_accomplishments],
+                'accomplished_count': len(deed.todays_accomplishments),
+            } for deed in deeds]
