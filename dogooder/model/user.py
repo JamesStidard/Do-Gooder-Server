@@ -1,17 +1,18 @@
 import uuid
 
 from sqlalchemy.orm import relationship
-from sqlalchemy.types import String, Boolean
+from sqlalchemy.types import String, Boolean, Integer
 from sqlalchemy.schema import Column
 
 from utilise.password_helper import PasswordHelper as PWH
 
-from dogooder.model.base import Base
+from blueshed.micro.orm.orm_utils import Base
+
 from dogooder.model.custom_types.uuid import UUID
 
 
 class User(Base):
-    id                 = Column(UUID, primary_key=True, default=uuid.uuid4)
+    id                 = Column(Integer, primary_key=True)
     username           = Column(String(255), nullable=False, unique=True)
     _email             = Column('email', String(255), nullable=False, unique=True)  # noqa
     email_confirmed    = Column(Boolean, nullable=False, default=False)
@@ -41,13 +42,6 @@ class User(Base):
     @password.setter
     def password(self, password):
         self._password = PWH.create_password(password)
-
-    def to_json(self):
-        return {
-            'id': str(self.id),
-            'username': self.username,
-            'accomplishments': [a.to_json() for a in self.accomplishments]
-        }
 
     def authenticate(self, password: str=None):
         success, updated_password = PWH.validate_password(self.password, password)  # noqa

@@ -9,5 +9,4 @@ def parse_unix_time(value):
 
 
 def to_unix_time(value):
-    value = time.mktime(value.timetuple())
-    return value
+    return time.mktime(value.timetuple())

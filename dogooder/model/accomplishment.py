@@ -3,15 +3,15 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, DateTime
 from sqlalchemy import func
 
-from dogooder.model.base import Base
-from dogooder.model.custom_types.uuid import UUID
+from blueshed.micro.orm.orm_utils import Base
+
 from dogooder.utils.date_helpers import to_unix_time
 
 
 class Accomplishment(Base):
     id        = Column(Integer, primary_key=True)
     completed = Column(DateTime, nullable=False, default=func.now())
-    user_id   = Column(UUID, ForeignKey('user.id'))
+    user_id   = Column(Integer, ForeignKey('user.id'))
     user      = relationship('User',
                              uselist=False,
                              primaryjoin='Accomplishment.user_id==User.id',

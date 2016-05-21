@@ -1,6 +1,7 @@
 .idea
-.env
+.env*
 venv
+initalize.py
 
 *.egg-info
 *.pyc

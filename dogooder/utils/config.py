@@ -1,59 +1,49 @@
-import os
-from collections import namedtuple
+from tornado.options import define, options
 
-from dotenv import load_dotenv
+from blueshed.micro.utils.utils import url_to_ws_origins
 
-from dogooder.utils.orm_utils import heroku_db_url
+define("ENV_REDIRECT",
+       type=str,
+       help="Allows for multiple enviroments to be used for development")
 
+define("DEBUG",
+       default=False,
+       type=bool,
+       help="Enables logging and returns stack trace erros to clients.")
 
-if os.path.isfile('.env'):
-    load_dotenv('.env')
+define("CLEARDB_DATABASE_URL",
+       type=str,
+       help="The database connection string for SQLAlchemy.")
 
+define("ORIGINS",
+       multiple=True,
+       help="These are the accepted CORS origins for the server.")
 
-def get_debug_env():
-    debug = os.getenv('DEBUG', '')
-    return False if debug.lower() in ['', 'no', 'false', '0'] else True
+define("COOKIE_NAME",
+       default="a2z-users",
+       type=str,
+       help="The name of the session cookie used in request headers.")
 
+define("COOKIE_SECRET",
+       default="don't-you-dare-tell-anyone",
+       type=str,
+       help="This is the secret used to sign the servers session cookies.")
 
-def get_db_url_env():
-    db_url = os.getenv('CLEARDB_DATABASE_URL')
-    if not db_url:
-        raise ValueError('Requires CLEARDB_DATABASE_URL environment variable')
-    return heroku_db_url(db_url)
+define("PORT",
+       default=8888,
+       type=int,
+       help="The port the server will open and listen for communications on.")
 
+define("WS_URL",
+       default="ws://localhost:8888/websocket",
+       type=str,
+       help="The full url for websocket connections.")
 
-def get_origins_env():
-    origins = os.getenv('ORIGINS', '').split(',')
-    return [o.strip() for o in origins]
-
-
-def get_cookie_name_env():
-    return os.getenv('COOKIE_NAME', 'do-gooder')
-
-
-def get_cookie_secret_env(default="don't-you-dare-tell-anyone"):
-    debug  = get_debug_env()
-    secret = os.getenv('COOKIE_SECRET', default)
-    if not debug and secret == default:
-        raise ValueError('Default cookie secret used on production. Please set COOKIE_SECRET environment variable')  # noqa
-    return secret
-
-
-def get_port_env():
-    return int(os.getenv('PORT', 8888))
-
-
-Configuration = namedtuple(
-    'Configuration',
-    'DEBUG, DB_URL, ORIGINS, COOKIE_NAME, COOKIE_SECRET, PORT',
-)
+define("POOL_SIZE",
+       default=0,
+       type=int,
+       help="The number of processes running to serve concurrent requests.")
 
 
-CONFIG = Configuration(
-    DEBUG=get_debug_env(),
-    DB_URL=get_db_url_env(),
-    ORIGINS=get_origins_env(),
-    COOKIE_NAME=get_cookie_name_env(),
-    COOKIE_SECRET=get_cookie_secret_env(),
-    PORT=get_port_env(),
-)
+def get_ws_origins_env():
+    return [url_to_ws_origins(u) for u in options.ORIGINS]
