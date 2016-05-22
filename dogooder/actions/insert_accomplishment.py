@@ -19,8 +19,9 @@ def insert_accomplishment(context: 'micro_context', deed_id: int, timezone: str=
 
             accomplishment = Accomplishment(deed=deed, user=user)
             session.add(accomplishment)
-            session.commit()
+            session.flush()
 
             result = [accomplishment_view(deed, user=user) for deed in todays_deeds]  # noqa
-            context.broadcast('ACCOMPLISHMENT_INSERT', result)
+            context.broadcast('TODAYS_DEEDS_SET', result, user.id)
+            context.broadcast('ACCOMPLISHMENT_INSERT', deed.id)
             return result

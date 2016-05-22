@@ -1,5 +1,6 @@
 from blueshed.micro.orm import db_connection
 from blueshed.micro.utils.base_context import BaseContext
+from blueshed.micro.utils.json_utils import dumps
 
 from dogooder.model.user import User
 
@@ -42,3 +43,16 @@ class Context(BaseContext):
     @current_user_id.setter
     def current_user_id(self, user_id):
         self.set_cookie('current_user', user_id)
+
+    def flush(self, handler, queue, clients):
+        PUBLIC = None
+
+        for signal, message, accl in self.broadcasts:
+            news = {"signal": signal, "message": message}
+
+            if queue:
+                queue.post(news)
+            else:
+                [client.write_message(news)
+                 for client in clients
+                 if accl is PUBLIC or client.current_user == accl]
