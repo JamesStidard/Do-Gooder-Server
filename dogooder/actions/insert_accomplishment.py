@@ -3,7 +3,7 @@ from dogooder.model.accomplishment import Accomplishment
 from dogooder.views.accomplishment import accomplishment_view
 
 
-def insert_accomplishment(context: 'micro_context', deed_id: int, timezone: str=None):  # noqa
+def insert_accomplishment(context: 'micro_context', deed_id: int, timezone: str=None) -> list:  # noqa
     with context.session as session:
         todays_deeds = Deed.todays_deeds(session, timezone=timezone)
 

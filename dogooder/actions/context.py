@@ -1,6 +1,5 @@
 from blueshed.micro.orm import db_connection
 from blueshed.micro.utils.base_context import BaseContext
-from blueshed.micro.utils.json_utils import dumps
 
 from dogooder.model.user import User
 
@@ -20,13 +19,13 @@ class Context(BaseContext):
     @property
     def current_user(self):
         """
-        Returns the user object or None based on the clients
+        Returns the user object or None based on the clients \
         current cookie state.
 
-        The user returned is an expunged object so needs to be
+        The user returned is an expunged object so needs to be \
         added to a new session if property access is required.
 
-        This provides no user access control - use authenticated
+        This provides no user access control - use authenticated \
         decorator in utils or handle in action.
         """
         with self.session as session:

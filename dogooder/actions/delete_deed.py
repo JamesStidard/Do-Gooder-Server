@@ -3,7 +3,7 @@ from tornado.web import HTTPError
 from dogooder.model.deed import Deed
 
 
-def delete_deed(context: 'micro_context', id: int):
+def delete_deed(context: 'micro_context', id: int) -> bool:
     with context.session as session:
         count = session.query(Deed)\
                        .filter(Deed.id == id)\

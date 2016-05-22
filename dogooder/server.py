@@ -7,7 +7,6 @@ from tornado.autoreload import add_reload_hook
 from tornado import ioloop
 from tornado.web import Application
 from tornado.options import options
-from tornado.template import Loader
 
 from blueshed.micro.orm import db_connection, orm_utils
 from blueshed.micro.utils import executor
@@ -38,7 +37,6 @@ def make_app():
 
     logging.info('Pool size: {}'.format(options.POOL_SIZE))
 
-    # TODO: pass js template into handler
     request_handlers = [
         (r"/control(.*)", RpcHandler, {
             'http_origins': options.ORIGINS,
