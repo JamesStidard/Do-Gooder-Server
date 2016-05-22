@@ -20,7 +20,7 @@ define("ORIGINS",
        help="These are the accepted CORS origins for the server.")
 
 define("COOKIE_NAME",
-       default="a2z-users",
+       default="do-gooder",
        type=str,
        help="The name of the session cookie used in request headers.")
 

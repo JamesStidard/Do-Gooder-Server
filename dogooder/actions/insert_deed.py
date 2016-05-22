@@ -9,5 +9,5 @@ def insert_deed(context: 'micro_context', description: str):
         session.flush()
 
         result = detailed_deed_view(deed)
-        context.broadcast('INSERT_DEED', result)
+        context.broadcast('DEED_INSERT', result)
         return result

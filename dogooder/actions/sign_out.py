@@ -4,4 +4,4 @@ def sign_out(context: 'micro_context'):
     """
     Sign user out of auth and give client logout url for others.
     """
-    context.set_current_user(None)
+    context.current_user_id = None

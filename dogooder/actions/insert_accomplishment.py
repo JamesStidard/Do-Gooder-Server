@@ -5,7 +5,7 @@ from dogooder.views.accomplishment import accomplishment_view
 
 def insert_accomplishment(context: 'micro_context', deed_id: int, timezone: str=None):  # noqa
     with context.session as session:
-        todays_deeds = Deed.todays_accomplishments(session, timezone=timezone)
+        todays_deeds = Deed.todays_deeds(session, timezone=timezone)
 
         try:
             deed = [d for d in todays_deeds if d.id == deed_id][0]
@@ -22,5 +22,5 @@ def insert_accomplishment(context: 'micro_context', deed_id: int, timezone: str=
             session.commit()
 
             result = [accomplishment_view(deed, user=user) for deed in todays_deeds]  # noqa
-            context.broadcast('INSERT_ACCOMPLISHMENT', result)
+            context.broadcast('ACCOMPLISHMENT_INSERT', result)
             return result

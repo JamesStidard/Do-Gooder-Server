@@ -8,3 +8,5 @@ initialize.py
 __pycache__
 
 .idea/Do-Gooder-Server.iml
+
+deeds.sql

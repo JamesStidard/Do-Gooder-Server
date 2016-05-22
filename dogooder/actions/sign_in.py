@@ -1,5 +1,6 @@
 from tornado.web import HTTPError
 
+from sqlalchemy import or_
 from sqlalchemy.orm.exc import NoResultFound
 
 from dogooder.model.user import User
@@ -13,11 +14,14 @@ def sign_in(context: 'micro_context', email: str, password: str) -> dict:
     """
     with context.session as session:
         try:
-            user = session.query(User).filter(User.email == email).one()
+            user = session.query(User)\
+                          .filter(or_(User.email == email,
+                                      User.username == email))\
+                          .one()
             user.authenticate(password)
             session.commit()
         except (NoResultFound, ValueError):
             raise HTTPError(400, reason='Incorrect username or password')
         else:
-            context.set_current_user(user.id)
+            context.current_user_id = user.id
             return detailed_user_view(user)

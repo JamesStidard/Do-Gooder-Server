@@ -24,6 +24,12 @@ class User(Base):
                                       remote_side='Accomplishment.user_id',
                                       back_populates='user',
                                       cascade='all, delete-orphan')
+    type               = Column(String(20))
+
+    __mapper_args__ = {
+        'polymorphic_on': type,
+        'polymorphic_identity': 'user'
+    }
 
     @property
     def email(self):
@@ -56,3 +62,9 @@ class User(Base):
         if not success:
             raise ValueError('Incorrect password')
         return success
+
+
+class Admin(User):
+    __mapper_args__ = {
+        'polymorphic_identity': 'admin'
+    }

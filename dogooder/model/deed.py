@@ -26,8 +26,8 @@ class Deed(Base):
                                           primaryjoin='and_(Deed.id==Accomplishment.deed_id, \
                                                             cast(Accomplishment.completed, Date) == func.current_date())')  # noqa
 
-    @classmethod
-    def todays_deeds(cls, session, *, timezone=None):
+    @staticmethod
+    def todays_deeds(session, *, timezone=None):
         timezone    = tz.gettz(timezone)
         today       = datetime.datetime.now(tz=timezone)
         today_start = datetime.datetime(today.year, today.month, today.day)

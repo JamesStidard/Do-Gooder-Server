@@ -1,7 +1,7 @@
 import logging
 
 from blueshed.micro.utils.json_utils import dumps
-from blueshed.micro.web.rpc_websocket import RpcWebsocket as Super
+from blueshed.micro.web.rpc_websocket import RpcWebsocket as Base
 
 from dogooder.views.user import detailed_user_view
 
@@ -9,7 +9,7 @@ from dogooder.views.user import detailed_user_view
 LOGGER = logging.getLogger(__name__)
 
 
-class RpcWebsocket(Super):
+class RpcWebsocket(Base):
 
     def open(self, *args, **kwargs):
         super(RpcWebsocket, self).open(self, *args, **kwargs)
@@ -19,6 +19,6 @@ class RpcWebsocket(Super):
         user    = context.current_user
 
         self.write_message(dumps({
-            "signal": 'SET_CURRENT_USER',
+            "signal": 'CURRENT_USER_SET',
             "message": detailed_user_view(user) if user else None,
         }))

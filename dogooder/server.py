@@ -12,11 +12,11 @@ from blueshed.micro.utils import executor
 from blueshed.micro.utils.service import Service
 from blueshed.micro.web.rpc_handler import RpcHandler
 
-from dogooder import actions
 from dogooder.handlers.rpc_websocket import RpcWebsocket
 from dogooder.utils.load_config import load_config
 from dogooder.actions.context import Context
 from dogooder.utils.config import get_ws_origins_env
+from dogooder import actions
 
 
 def make_app():
