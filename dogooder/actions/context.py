@@ -9,7 +9,7 @@ class Context(BaseContext):
 
     def __init__(self, client_id, action_id, action, cookies=None, handler=None):  # noqa
         super().__init__(client_id, action_id, action, cookies=cookies, handler=handler)  # noqa
-        self.headers = handler.request.headers if handler and handler.request else None  # noqa
+        self.headers  = handler.request.headers if handler and handler.request else None  # noqa
         self.settings = handler.settings if handler and handler.settings else None  # noqa
 
     @property
@@ -42,7 +42,3 @@ class Context(BaseContext):
     @current_user_id.setter
     def current_user_id(self, user_id):
         self.set_cookie('current_user', user_id)
-
-    # def broadcast_on_success(self, signal, message, accl=None):
-    #     self.broadcast(signal, message, accl=accl)
-    #     return message

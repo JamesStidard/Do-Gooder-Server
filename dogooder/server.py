@@ -1,22 +1,24 @@
 import logging
 
+from pkg_resources import resource_filename
 from concurrent.futures.process import ProcessPoolExecutor
 
 from tornado.autoreload import add_reload_hook
 from tornado import ioloop
 from tornado.web import Application
 from tornado.options import options
+from tornado.template import Loader
 
 from blueshed.micro.orm import db_connection, orm_utils
 from blueshed.micro.utils import executor
 from blueshed.micro.utils.service import Service
 from blueshed.micro.web.rpc_handler import RpcHandler
 
+from dogooder import actions
 from dogooder.handlers.rpc_websocket import RpcWebsocket
 from dogooder.utils.load_config import load_config
 from dogooder.actions.context import Context
 from dogooder.utils.config import get_ws_origins_env
-from dogooder import actions
 
 
 def make_app():
@@ -36,9 +38,11 @@ def make_app():
 
     logging.info('Pool size: {}'.format(options.POOL_SIZE))
 
+    # TODO: pass js template into handler
     request_handlers = [
         (r"/control(.*)", RpcHandler, {
             'http_origins': options.ORIGINS,
+            'js_template': "api-tmpl.js",
             'ws_url': options.WS_URL
         }),
         (r"/websocket/?", RpcWebsocket, {
@@ -50,6 +54,7 @@ def make_app():
         request_handlers,
         services=Service.describe(actions),
         micro_context=Context,
+        template_path=resource_filename('dogooder', 'templates'),
         debug=options.DEBUG,
         allow_exception_messages=options.DEBUG,
         cookie_name=options.COOKIE_NAME,
